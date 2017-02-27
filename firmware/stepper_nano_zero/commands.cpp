@@ -60,7 +60,7 @@ CMD_STR(setzero, "set the reference angle to zero");
 CMD_STR(usbstream, "streams time, error and angle data through USB");//mod OE
 CMD_STR(stop, "stop USB data stream");//mod OE
 CMD_STR(reboot, "reboots NZS");//mod OE
-
+CMD_STR(i2c, "enable or disable I2C communication");//mod OE
 
 //List of supported commands
 sCommand Cmds[] =
@@ -100,9 +100,32 @@ sCommand Cmds[] =
 		COMMAND(usbstream),//mod OE
 		COMMAND(stop),//mod OE
 		COMMAND(reboot),//mod OE
+		COMMAND(i2c),//mod OE
 
 		{"",0,""}, //End of list signal
 };
+
+static int i2c_cmd(sCmdUart *ptrUart,int argc, char * argv[])
+{
+	if (argc == 1)
+	{
+		bool x;
+		x=abs(atol(argv[0]));
+		if(x==true)
+		{
+			CommandPrintf(ptrUart,"I2C communication enabled");
+			i2c_com.on = true;
+			i2c_com.begin();
+		}
+		else
+		{
+			CommandPrintf(ptrUart,"I2C communication disabled");
+			i2c_com.on = false;
+		}
+	}
+
+  return 0;
+}
 
 static int reboot_cmd(sCmdUart *ptrUart,int argc, char * argv[])
 {

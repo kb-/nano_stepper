@@ -21,6 +21,8 @@
 #pragma GCC push_options
 #pragma GCC optimize ("-Ofast")
 
+//#define DISABLE_USBstream
+//#define DISABLE_I2Ccom
 
 volatile bool enableState=true;
 
@@ -466,6 +468,9 @@ void NZS::begin(void)
 #ifndef DISABLE_USBstream //mod OE
 	USB_stream.setup(&stepperCtrl);
 #endif
+#ifndef DISABLE_I2Ccom //mod OE
+	i2c_com.setup(&stepperCtrl);
+#endif
 	Lcd.begin(&stepperCtrl);
 	Lcd.lcdShow("Misfit"," Tech", VERSION);
 
@@ -563,6 +568,11 @@ void NZS::loop(void)
 #ifndef DISABLE_USBstream //mod OE
 	if(USB_stream.on&&SerialUSB){
 		USB_stream.process();
+	}
+#endif
+#ifndef DISABLE_I2Ccom //mod OE
+	if(i2c_com.on){
+		i2c_com.process();
 	}
 #endif
 

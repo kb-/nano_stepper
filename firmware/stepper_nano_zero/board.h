@@ -45,6 +45,8 @@
 
 #define F_CPU (48000000UL)
 
+#define NZS_LABEL 'X'
+
 
 /* TODO are flaged with TODO
  *   TODO - add detection of magnet to make sure PCB is on motor
