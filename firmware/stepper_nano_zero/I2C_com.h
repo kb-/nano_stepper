@@ -6,7 +6,8 @@
 #include "stepper_controller.h"
 
 struct __attribute__ ((packed)) i2c_com_data {
-	char id=NZS_LABEL;		//NZS axis (X,Y,E...)
+	char from=NZS_LABEL;		//NZS axis (X,Y,E...)
+	char to='C';
 	char action='e';//e: absolute max error stream, i: motor current setting (mA),h: hold current setting (mA),c: calibrate
 	int32_t data;
 };
@@ -17,7 +18,8 @@ class i2c_com
 		StepperCtrl *ptrStepperCtrl;
 		int32_t maxerr;
 		int32_t geterr(void);
-		void send(i2c_com_data);
+		void communicate(i2c_com_data);
+		void run_cmd_from_slave(void);
 		i2c_com_data data_to_slave;
 		i2c_com_data data_from_slave;
 

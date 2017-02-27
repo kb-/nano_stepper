@@ -6,6 +6,7 @@
 
 #define CTRL_I2C_ADDR 12
 #define CTRL_SEND_INTERVAL 2000
+#define CTRL_GET_INTERVAL 500
 #define I2C_CLOCK 100000
 
 int32_t i2c_com::geterr(void){
@@ -17,20 +18,25 @@ int32_t i2c_com::geterr(void){
 	return maxerr;
 }
 
+void i2c_com::begin(void){
+	Wire.begin();        // join i2c bus
+	Wire.setClock(I2C_CLOCK);
+}
 
 void i2c_com::setup(StepperCtrl *ptrsCtrl){
 	ptrStepperCtrl=ptrsCtrl;
 }
 
 void i2c_com::process(void){//call this in loop
-	send(data_to_slave);
+	data_to_slave.data = geterr();
+	communicate(data_to_slave);
 }
 void i2c_com::process(i2c_com_data data){
-	send(data);
+	communicate(data);
 }
 
 
-void i2c_com::send(i2c_com_data data){
+void i2c_com::communicate(i2c_com_data data){
   static uint32_t t=0;
   static uint32_t t1=0;
   if ((millis()-t)>CTRL_SEND_INTERVAL)//delay, without delay()
@@ -41,22 +47,29 @@ void i2c_com::send(i2c_com_data data){
 	Wire.endTransmission ();
 	maxerr = 0;//reset stored error
   }
-  if ((millis()-t1)>CTRL_SEND_INTERVAL)//delay, without delay()
+  if ((millis()-t1)>CTRL_GET_INTERVAL)//delay, without delay()
   {
 	Wire.requestFrom(CTRL_I2C_ADDR, 2*sizeof(data_to_slave));
 	t1=millis();
 	do{
 	  I2C_readAnything(data_from_slave);
-	}while(data_from_slave.action!='Z');//reading till the expected data is delivered
-	Serial.println (data_from_slave.id);
-	Serial.println (data_from_slave.action);
-	Serial.println (data_from_slave.data);
+	}while(data_from_slave.to!=NZS_LABEL);//reading till the expected data is delivered
+	if(data_from_slave.to==NZS_LABEL||data_from_slave.to==NZS_LABEL==0)//run if for this NZS or all NZS
+	{
+		run_cmd_from_slave();
+	}
   }
 }
 
-void i2c_com::begin(void){
-	Wire.begin();        // join i2c bus
-	Wire.setClock(I2C_CLOCK);
+void i2c_com::run_cmd_from_slave(void){
+	if(data_from_slave.action=='t')//test time tick transfer
+	{
+		Serial.println (data_from_slave.from);
+		Serial.println (data_from_slave.to);
+		Serial.println (data_from_slave.action);
+		Serial.println (data_from_slave.data);
+	}
+
 }
 
 class i2c_com i2c_com;
