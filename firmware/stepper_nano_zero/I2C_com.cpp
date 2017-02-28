@@ -49,14 +49,16 @@ void i2c_com::communicate(i2c_com_data data){
   }
   if ((millis()-t1)>CTRL_GET_INTERVAL)//delay, without delay()
   {
-	Wire.requestFrom(CTRL_I2C_ADDR, 2*sizeof(data_to_slave));
+	uint8_t data_size = Wire.requestFrom(CTRL_I2C_ADDR, 2*sizeof(data_to_slave));
 	t1=millis();
-	do{
-	  I2C_readAnything(data_from_slave);
-	}while(data_from_slave.to!=NZS_LABEL);//reading till the expected data is delivered
-	if(data_from_slave.to==NZS_LABEL||data_from_slave.to==NZS_LABEL==0)//run if for this NZS or all NZS
-	{
-		run_cmd_from_slave();
+	if(data_size==2*sizeof(data_to_slave)){
+		do{
+		  I2C_readAnything(data_from_slave);
+		}while(data_from_slave.to!=NZS_LABEL);//reading till the expected data is delivered
+		if(data_from_slave.to==NZS_LABEL||data_from_slave.to==NZS_LABEL==0)//run if for this NZS or all NZS
+		{
+			run_cmd_from_slave();
+		}
 	}
   }
 }

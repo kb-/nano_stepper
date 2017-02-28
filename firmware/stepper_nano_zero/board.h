@@ -45,7 +45,7 @@
 
 #define F_CPU (48000000UL)
 
-#define NZS_LABEL 'X'
+#define NZS_LABEL 'Y'
 
 
 /* TODO are flaged with TODO
