@@ -55,7 +55,7 @@ void i2c_com::communicate(i2c_com_data data){
 		do{
 		  I2C_readAnything(data_from_slave);
 		}while(data_from_slave.to!=NZS_LABEL);//reading till the expected data is delivered
-		if(data_from_slave.to==NZS_LABEL||data_from_slave.to==NZS_LABEL==0)//run if for this NZS or all NZS
+		if(data_from_slave.to==NZS_LABEL||data_from_slave.to==0)//run if for this NZS or all NZS
 		{
 			run_cmd_from_slave();
 		}
@@ -71,7 +71,7 @@ void i2c_com::run_cmd_from_slave(void){
 		Serial.println (data_from_slave.action);
 		Serial.println (data_from_slave.data);
 	}
-
+	if(data_from_slave.action=='c')ptrStepperCtrl->calibrateEncoder();
 }
 
 class i2c_com i2c_com;
