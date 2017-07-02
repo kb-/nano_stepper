@@ -52,6 +52,7 @@ void i2c_com::communicate(i2c_com_data data){
       //Check if valid data is transmitted (only for testing purpose)
       if(data_from_master.from=='M'&&data_from_master.to==NZS_LABEL&&data_from_master.action=='e')
       {
+        // LOG("%d Valid transfers from m1",ok1);
         ok1++;
 //        SerialUSB.print (ok1);
 //        SerialUSB.println (" ok1");

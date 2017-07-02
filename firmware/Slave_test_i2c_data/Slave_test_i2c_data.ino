@@ -48,6 +48,7 @@ void loop(){
       //Check if valid data is transmitted (only for testing purpose)
       if(data_from_Master.from=='M'&&data_from_Master.action=='e')
       {
+        SerialUSB.println(ok1);
         ok1++;
         //data_to_Slave2=data_from_Master;
       // }else if(data_from_Master.id=='Y'&&data_from_Master.action=='e'&&data_from_Master.data==2000)
