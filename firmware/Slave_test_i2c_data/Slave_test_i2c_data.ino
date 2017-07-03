@@ -65,9 +65,10 @@ void loop(){
       SerialUSB.println (" Valid transfers from m1");
       // Serial.print(ok2);
       // Serial.println (" Valid transfers from m2"); 
-//      Serial.println (data_from_Master.id);
-//      Serial.println (data_from_Master.action);
-//      Serial.println (data_from_Master.data);    
+      SerialUSB.println (data_from_Master.from);
+      SerialUSB.println (data_from_Master.to);
+      SerialUSB.println (data_from_Master.action);
+      SerialUSB.println (data_from_Master.data);    
     }
     // clear the string:
     inputString = "";

@@ -8,7 +8,7 @@
 #define MASTERS_CNT 1     //number of masters on the bus
 #define SLAVES_CNT 2     //number of slaves on the bus
 #define I2C_CLOCK 100000
-#define DT 200             //transfer interval(for low values, check how busy the bus is with a logic analyser)
+#define DT 100             //transfer interval(for low values, check how busy the bus is with a logic analyser)
 #define READ_LIM 10       //retries on read collision
 #define CNT 4000000        //number of transfers
 
@@ -24,18 +24,23 @@ int i2c_addr[SLAVES_CNT] = {12,13};
   // int32_t data;
 // };from
 struct __attribute__ ((packed)) i2c_com_data {
-	char from='M';		//NZS axis (X,Y,E...)
-	char to='X';
-	char action='e';//e: absolute max error stream, i: motor current setting (mA),h: hold current setting (mA),c: calibrate
-	int32_t data;
+  char from='M';    //NZS axis (X,Y,E...)
+  char to='X';
+  char action='e';//e: absolute max error stream, i: motor current setting (mA),h: hold current setting (mA),c: calibrate
+  int32_t data;
 };
 
 uint16_t dt = DT;
 uint8_t slaves_cnt = SLAVES_CNT;
 uint32_t t=0;
 uint32_t t1=0;
+bool start=false;
+uint8_t i=SLAVES_CNT-1;
+bool tog = true;
 
 //for collision test
+uint32_t transfer1=0;
+uint32_t transfer2=0;
 uint32_t n1=0;
 uint32_t n2=0;
 uint32_t ok1=0;
@@ -71,29 +76,50 @@ void setup(){
   ; // wait for serial port to connect.
   }
   Serial.println("Master connected");
-	Wire.begin();        // join i2c bus
+  Wire.begin();        // join i2c bus
   Wire.setClock(I2C_CLOCK);                                              inputString.reserve(10);
   pinMode(PIN_RED_LED, OUTPUT);
-  scanSlaves(i2c_addr);
+  scanSlaves(i2c_addr);//don't block code if slaves missing
 }
 
 void loop(){
   data_to_slave.data = 1500;  //set the data to transfer
-  for(int i=0; i<slaves_cnt;i++){
-    if(i2c_addr[i]!=0){
-      if(i==0){
-        data_to_slave.to = 'X';
-      }else if(i==1){
-        data_to_slave.to = 'Y';
+
+  if((millis()-t)>dt&&n1<CNT&&start&&tog){
+      t=millis();
+      i = (i+1)%SLAVES_CNT;//circle counter
+//      Serial.println(i);
+//    t=millis();
+//    for(int i=0; i<slaves_cnt;i++){
+      if(i2c_addr[i]!=0){//don't block code if slaves missing
+        // if((millis()-t)>dt&&n1<CNT){
+        if(i==0){
+//          Serial.println("X");
+          data_to_slave.to = 'X';
+          data_to_slave.data = transfer1;
+          if(sendToSlave(data_to_slave,i2c_addr[i]))transfer1++;
+        }else if(i==1){
+//          Serial.println("Y");
+          data_to_slave.to = 'Y';
+          data_to_slave.data = transfer2;
+          if(sendToSlave(data_to_slave,i2c_addr[i]))transfer2++;
+        }
       }
-      sendToSlave(data_to_slave,i2c_addr[i]);
-      getFromSlave(i2c_addr[i]);
-    }
+      tog = false;
+  }
+  if((millis()-t)>dt+10&&n1<CNT&&start&&!tog){
+//    for(int i=0; i<slaves_cnt;i++){
+      if(i2c_addr[i]!=0){//don't block code if slaves missing
+        getFromSlave(i2c_addr[i]);
+      }
+      tog = true;
   }
   
   //report current transfer results when typing "r" + "return" keys in serial window
   if(stringComplete){
-    if(inputString=="t\r"){
+    if(inputString=="s\r"){
+      start = true;
+    }else if(inputString=="t\r"){
       data_from_slave.action=='t';
     }else if(inputString=="calibrate\r"){
       data_from_slave.action=='c';
@@ -146,53 +172,66 @@ void loop(){
   }
 }
 
-void sendToSlave(i2c_com_data data_to_slave, int addr){
+bool sendToSlave(i2c_com_data data_to_slave, int addr){
 
-  if((millis()-t)>dt&&n1<CNT){//delay, without delay()
-      t=millis();
-      do{    
-        Wire.beginTransmission(addr);
-        I2C_singleWriteAnything(data_to_slave);  //Prepare transmssion to slave
-        // Wire.write((uint8_t*) &data_to_slave, sizeof(i2c_com_data));
+  //delay, without delay()
+      
+  do{    
+    Wire.beginTransmission(addr);
+    I2C_singleWriteAnything(data_to_slave);  //Prepare transmssion to slave
+    // Wire.write((uint8_t*) &data_to_slave, sizeof(i2c_com_data));
 
-        status = Wire.endTransmission();        //Send data and get transfer status
-        if(read_cnt1==READ_LIM){                //give up after too many retries, to not hang code
-          read_cnt1 = 0;
-          write_InfLoop++;
-          break;
-        }
-        if(status!=0){
-          if(status==1){                          //check transfer status
-            write_dataTooLong++;
-          }else if(status==2){
-            write_NACK_Addr++;
-          }else if(status==3){
-            write_NACK_Data++;
-          }else if(status==4){
-            write_OtherErr++;
-          }else if(status==5){
-            write_InfLoop++;
-          }
-        }    
-      }while(status!=0);                        //retry on collision
-      n1++;
+    status = Wire.endTransmission();        //Send data and get transfer status
+    if(read_cnt1==READ_LIM){                //give up after too many retries, to not hang code
+      read_cnt1 = 0;
+      write_InfLoop++;
+      return false;
     }
-    // return t;
+    if(status!=0){
+      if(status==1){                          //check transfer status
+        write_dataTooLong++;
+      }else if(status==2){
+        write_NACK_Addr++;
+      }else if(status==3){
+        write_NACK_Data++;
+      }else if(status==4){
+        write_OtherErr++;
+      }else if(status==5){
+        write_InfLoop++;
+      }
+      return false;
+    } 
+       
+  }while(status!=0);                        //retry on collision
+  n1++;
+  return true;    
+  // return t;
 }
 
 void getFromSlave(int addr){
-  if((millis()-t1)>dt&&n2<CNT)//delay, without delay()
+  //delay, without delay()
  {
+    // Serial.print("t=");
+    // Serial.println(millis());
+    // Serial.println(transfer1);
+    // Serial.println(transfer2);
     if(Wire.requestFrom(addr, MASTERS_CNT*sizeof(data_from_slave))==MASTERS_CNT*sizeof(data_from_slave)){//request data from slave, cjeck if the right data size is returned (filters out Wire library's misinterpreted requests)
       do{
         I2C_readAnything(data_from_slave);
-        Serial.println(data_from_slave.from);
-        Serial.println(data_from_slave.to);
-        Serial.println(data_from_slave.action);
-        Serial.println(data_from_slave.data);
+        // Serial.println(data_from_slave.from);
+        // Serial.println(data_from_slave.to);
+        // Serial.println(data_from_slave.action);
+        // Serial.println(data_from_slave.data);
+        // Serial.println(transfer1);
+        // Serial.println(transfer2);
         read_cnt++;
         if(read_cnt>MASTERS_CNT){//still need this?
+          Serial.println(data_from_slave.from);
+          Serial.println(data_from_slave.to);
+          Serial.println(data_from_slave.action);
+          Serial.println(data_from_slave.data);
           Serial.println("read error break");
+          read_collisions++;
           break;
         }
       }while(data_from_slave.to!='M');    //reading till the expected data is delivered (data from slave is for all masters since there isn't a master address transmitted by requestFrom)
@@ -204,19 +243,19 @@ void getFromSlave(int addr){
       //Check if valfrom data is transmitted (only for testing purpose)
       if(data_from_slave.from=='X'&&data_from_slave.to=='M'){
         ok1++;
-        Serial.print(ok1);
-        Serial.println(" ok1");
+        // Serial.print(ok1);
+        // Serial.println(" ok1");
       }
       if(data_from_slave.from=='Y'&&data_from_slave.to=='M'){
         ok2++;
-        Serial.print(ok2);
-        Serial.println(" ok2");
+        // Serial.print(ok2);
+        // Serial.println(" ok2");
       }
       n2++;
     }else{
       read_collisions++;                      //count read collisions
     }
-    t1=millis();
+    // t1=millis();
     //dt = DT+random(-5, 5);
   }
 }
@@ -258,3 +297,4 @@ void scanSlaves(int *i2c_addr){
 //void serialEventRun(void){
 //  if(Serial.available()) serialEvent();
 //}
+
