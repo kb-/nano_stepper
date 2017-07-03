@@ -8,7 +8,7 @@
 #define MASTERS_CNT 1     //number of masters on the bus
 #define SLAVES_CNT 2     //number of slaves on the bus
 #define I2C_CLOCK 100000
-#define DT 100             //transfer interval(for low values, check how busy the bus is with a logic analyser)
+#define DT 4             //transfer interval(for low values, check how busy the bus is with a logic analyser)
 #define READ_LIM 10       //retries on read collision
 #define CNT 4000000        //number of transfers
 
@@ -107,7 +107,7 @@ void loop(){
       }
       tog = false;
   }
-  if((millis()-t)>dt+10&&n1<CNT&&start&&!tog){
+  if((millis()-t)>dt+2&&n1<CNT&&start&&!tog){
 //    for(int i=0; i<slaves_cnt;i++){
       if(i2c_addr[i]!=0){//don't block code if slaves missing
         getFromSlave(i2c_addr[i]);
