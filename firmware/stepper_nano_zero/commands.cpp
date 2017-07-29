@@ -949,7 +949,7 @@ static int motorparams_cmd(sCmdUart *ptrUart,int argc, char * argv[])
  */
 static int vpid_cmd(sCmdUart *ptrUart,int argc, char * argv[])
 {
-   CommandPrintf(ptrUart, "args %d\n\r",argc);
+   //CommandPrintf(ptrUart, "args %d\n\r",argc);
    if (0 == argc)
    {
       int32_t x,y;

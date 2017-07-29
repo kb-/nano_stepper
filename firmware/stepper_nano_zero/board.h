@@ -37,13 +37,13 @@
 
 #define NZS_AS5047_PIPELINE //does a pipeline read of encoder, which is slightly faster
 
-#define NZS_CONTROL_LOOP_HZ (4000) //update rate of control loop
+#define NZS_CONTROL_LOOP_HZ (3000) //update rate of control loop 6000
 
 
 #define NZS_LCD_ABSOULTE_ANGLE  //define this to show angle from zero in positive and negative direction
 								// for example 2 rotations from start will be angle of 720 degrees
 
-//#define ENABLE_PHASE_PREDICTION //this enables prediction of phase at high velocity to increase motor speed
+#define ENABLE_PHASE_PREDICTION //this enables prediction of phase at high velocity to increase motor speed
 								//as of FW0.11 it is considered development only
 
 #define VERSION "FW: 0.19" //this is what prints on LCD during splash screen

@@ -1347,11 +1347,12 @@ void StepperCtrl::updateLocTable(int64_t desiredLoc, int64_t currentLoc, Control
    }
 
    //use ticks for the moment so we can tell if we miss data on the print.
-   locs[locWriteIndx].microSecs=(int32_t)micros();
+   locs[locWriteIndx].microSecs=(uint32_t)micros();
    locs[locWriteIndx].desiredLoc=(int32_t)(desiredLoc-zeroAngleOffset);
    locs[locWriteIndx].actualLoc=(int32_t)(currentLoc-zeroAngleOffset);
    locs[locWriteIndx].angle=(ptrCtrl->angle-zeroAngleOffset);
    locs[locWriteIndx].ma=ptrCtrl->ma;
+   locs[locWriteIndx].loopTimeus=loopTimeus;
    locWriteIndx=next;
 
 

@@ -754,7 +754,7 @@ void NZS::loop(void)
 
 	//   if (dataEnabled==0)
 	//   {
-	//      LOG("loop time is %dus",stepperCtrl.getLoopTime());
+	//    LOG("loop time is %dus",stepperCtrl.getLoopTime());
 	//   }
 
 	if (enableState != stepperCtrl.getEnable())
