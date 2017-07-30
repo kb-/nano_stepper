@@ -24,6 +24,17 @@
 
 #define N_DATA (1024)
 
+//Low pass chebyshev filter order=2 alpha1=0.026666666666667 
+class filter
+{
+  public:
+    filter();
+    filter(int16_t x);//non 0 initialisation
+  private:
+    int16_t v[3];
+  public:
+    short step(int16_t x);
+};
 
 typedef enum {
 	STEPCTRL_NO_ERROR=0,
@@ -188,6 +199,5 @@ class StepperCtrl
 		void PID_Autotune(void);
 		void setZero(void);
 };
-
 #endif //__STEPPER_CONTROLLER_H__
 

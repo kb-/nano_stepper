@@ -8,6 +8,7 @@
 extern StepperCtrl stepperCtrl;
 extern eepromData_t PowerupEEPROM;
 extern i2c_com i2c_com;
+//extern filter lpass;
 
 void commandsInit(void);
 int commandsProcess(void);

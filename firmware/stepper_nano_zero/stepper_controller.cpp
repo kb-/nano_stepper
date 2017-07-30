@@ -20,6 +20,33 @@
 
 #define WAIT_TC16_REGS_SYNC(x) while(x->COUNT16.STATUS.bit.SYNCBUSY);
 
+//Low pass chebyshev filter order=2 alpha1=0.026666666666667 
+filter::filter()
+{
+  for(int i=0; i <= 2; i++)
+    v[i]=0;
+}
+filter::filter(int16_t x)//non 0 initialisation
+{
+  v[0]=0;
+  v[1]=x/4;
+  v[2]=x/4;
+}
+ short filter::step(int16_t x)
+{
+  v[0] = v[1];
+  v[1] = v[2];
+  long tmp = ((((x *  20043L) >>  6)  //= (   1.9114034997e-2 * x)
+    + ((v[0] * -22089L) >> 1) //+( -0.6741118059*v[0])
+    + (v[1] * 26176L) //+(  1.5976556660*v[1])
+    )+8192) >> 14; // round and downshift fixed point /16384
+
+  v[2]= (int16_t)tmp;
+  return (int16_t)((
+     (v[0] + v[2])
+    +2 * v[1])); // 2^
+}
+
 volatile bool TC5_ISR_Enabled=false;
 
 void setupTCInterrupts() {
@@ -1145,6 +1172,7 @@ bool StepperCtrl::simpleFeedback(int64_t desiredLoc, int64_t currentLoc, Control
 	static int32_t iTerm=0;
 	//static int64_t lastY=getCurrentLocation();
 	static int32_t velocity=0;
+  filter lpass;
 
 	int32_t fullStep=ANGLE_STEPS/motorParams.fullStepsPerRotation;
 
@@ -1234,6 +1262,9 @@ bool StepperCtrl::simpleFeedback(int64_t desiredLoc, int64_t currentLoc, Control
 
 
 		y=y+u;
+    //LOG("mA %d", (int32_t)ma);
+    ma = (int32_t)lpass.step(lpass.step((int16_t)ma));//2 steps filter
+    //LOG("mAfilt %d", (int32_t)ma);
 		ptrCtrl->ma=ma;
 		ptrCtrl->angle=(int32_t)y;
 		moveToAngle(y,ma); //35us
