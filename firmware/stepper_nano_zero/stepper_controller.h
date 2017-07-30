@@ -29,11 +29,11 @@ class filter
 {
   public:
     filter();
-    filter(int32_t x);//non 0 initialisation
+    filter(int16_t x);//non 0 initialisation
   private:
-    int32_t v[3];
+    int16_t v[3];
   public:
-    short step(int32_t x);
+    short step(int16_t x);
 };
 
 typedef enum {
