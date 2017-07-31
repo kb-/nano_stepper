@@ -1173,11 +1173,11 @@ bool StepperCtrl::simpleFeedback(int64_t desiredLoc, int64_t currentLoc, Control
 	//static int64_t lastY=getCurrentLocation();
 	static int32_t velocity=0;
   
-  int32_t c1[3] = {18665,-30009,30805};
-  int32_t s1[3] = {7,1,0};
+  int32_t c1[3] = {21263,-30670,31387};
+  int32_t s1[3] = {8,1,0};
   static filter lpass1(c1,s1,0);
-  int32_t c2[3] = {16575,-26453,29351};
-  int32_t s2[3] = {8,1,0};
+  int32_t c2[3] = {19104,-27911,30190};
+  int32_t s2[3] = {9,1,0};
   static filter lpass2(c2,s2,0);
 
 	int32_t fullStep=ANGLE_STEPS/motorParams.fullStepsPerRotation;
@@ -1269,9 +1269,7 @@ bool StepperCtrl::simpleFeedback(int64_t desiredLoc, int64_t currentLoc, Control
 
 
 		y=y+u;
-    //LOG("mA %d", (int32_t)ma);
-    //ma = (int32_t)lpass2.step(lpass1.step((int16_t)ma));//2 steps filter
-    //LOG("mAfilt %d", (int32_t)ma);
+
 		ptrCtrl->ma=ma;
 		ptrCtrl->angle=(int32_t)y;
 		moveToAngle(y,ma); //35us
