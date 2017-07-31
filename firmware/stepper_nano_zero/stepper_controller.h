@@ -28,12 +28,13 @@
 class filter
 {
   public:
-    filter();
-    filter(int16_t x);//non 0 initialisation
+    filter(int32_t c_[3],int32_t s_[3],int16_t x);//{gain,denom3,denom2},shift by, initialisationvalue (0) 
   private:
     int16_t v[3];
+    int16_t c[3];
+    int16_t s[3];
   public:
-    short step(int16_t x);
+    int16_t step(int16_t x);
 };
 
 typedef enum {

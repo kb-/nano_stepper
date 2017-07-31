@@ -21,24 +21,24 @@
 #define WAIT_TC16_REGS_SYNC(x) while(x->COUNT16.STATUS.bit.SYNCBUSY);
 
 //Low pass chebyshev filter order=2 alpha1=0.026666666666667 
-filter::filter()
-{
-  for(int i=0; i <= 2; i++)
-    v[i]=0;
-}
-filter::filter(int16_t x)//non 0 initialisation
+filter::filter(int32_t c_[3],int32_t s_[3],int16_t x)
 {
   v[0]=0;
   v[1]=x/4;
   v[2]=x/4;
+  for(int i=0; i <= 2; i++)
+  {
+    c[i]=c_[i];
+    s[i]=s_[i];
+  }
 }
- short filter::step(int16_t x)
+int16_t filter::step(int16_t x)
 {
   v[0] = v[1];
   v[1] = v[2];
-  long tmp = ((((x *  20043L) >>  6)  //= (   1.9114034997e-2 * x)
-    + ((v[0] * -22089L) >> 1) //+( -0.6741118059*v[0])
-    + (v[1] * 26176L) //+(  1.5976556660*v[1])
+  int32_t tmp = ((((x *  c[0]) >>  s[0])  //= (   1.9114034997e-2 * x)
+    + ((v[0] * (c[1])) >> s[1]) //+( -0.6741118059*v[0])
+    + (v[1] * (c[2])) >> s[2] //+(  1.5976556660*v[1])
     )+8192) >> 14; // round and downshift fixed point /16384
 
   v[2]= (int16_t)tmp;
@@ -1172,7 +1172,13 @@ bool StepperCtrl::simpleFeedback(int64_t desiredLoc, int64_t currentLoc, Control
 	static int32_t iTerm=0;
 	//static int64_t lastY=getCurrentLocation();
 	static int32_t velocity=0;
-  static filter lpass;
+  
+  int32_t c1[3] = {18665,-30009,30805};
+  int32_t s1[3] = {7,1,0};
+  static filter lpass1(c1,s1,0);
+  int32_t c2[3] = {16575,-26453,29351};
+  int32_t s2[3] = {8,1,0};
+  static filter lpass2(c2,s2,0);
 
 	int32_t fullStep=ANGLE_STEPS/motorParams.fullStepsPerRotation;
 
@@ -1253,6 +1259,7 @@ bool StepperCtrl::simpleFeedback(int64_t desiredLoc, int64_t currentLoc, Control
 																/ fullStep + motorParams.currentHoldMa;
 
 		//ma=(abs(u)*(NVM->SystemParams.currentMa))/fullStep;
+    ma = (int32_t)lpass2.step(lpass1.step((int16_t)ma));//2 steps filter
 
 		if (ma>motorParams.currentMa)
 		{
@@ -1263,7 +1270,7 @@ bool StepperCtrl::simpleFeedback(int64_t desiredLoc, int64_t currentLoc, Control
 
 		y=y+u;
     //LOG("mA %d", (int32_t)ma);
-    ma = (int32_t)lpass.step(lpass.step((int16_t)ma));//2 steps filter
+    //ma = (int32_t)lpass2.step(lpass1.step((int16_t)ma));//2 steps filter
     //LOG("mAfilt %d", (int32_t)ma);
 		ptrCtrl->ma=ma;
 		ptrCtrl->angle=(int32_t)y;
