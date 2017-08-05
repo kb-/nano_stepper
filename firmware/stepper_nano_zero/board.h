@@ -30,6 +30,7 @@
 
 #define NZS_LABEL 'Y'
 #define NZS_ADDRESS 13
+#define FILTERCURRENT
 
 #define NZS_FAST_CAL // define this to use 32k of flash for fast calibration table
 #define NZS_FAST_SINE //uses 2048 extra bytes to implement faster sine tables
@@ -43,7 +44,7 @@
 #define NZS_LCD_ABSOULTE_ANGLE  //define this to show angle from zero in positive and negative direction
 								// for example 2 rotations from start will be angle of 720 degrees
 
-#define ENABLE_PHASE_PREDICTION //this enables prediction of phase at high velocity to increase motor speed
+//#define ENABLE_PHASE_PREDICTION //this enables prediction of phase at high velocity to increase motor speed
 								//as of FW0.11 it is considered development only
 
 #define VERSION "FW: 0.19" //this is what prints on LCD during splash screen

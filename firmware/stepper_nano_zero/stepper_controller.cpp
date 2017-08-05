@@ -1044,6 +1044,14 @@ bool StepperCtrl::pidFeedback(int64_t desiredLoc, int64_t currentLoc, Control_t 
 	static int32_t lastError=0;
 	static int32_t Iterm=0;
 	int64_t y;
+  
+  //OEmod: define low pass filter
+  int32_t c1[3] = {21263,-30670,31387};
+  int32_t s1[3] = {8,1,0};
+  static filter lpass1(c1,s1,0);
+  int32_t c2[3] = {19104,-27911,30190};
+  int32_t s2[3] = {9,1,0};
+  static filter lpass2(c2,s2,0);
 
 	int32_t fullStep=ANGLE_STEPS/motorParams.fullStepsPerRotation;
 	int32_t dy;
@@ -1061,6 +1069,14 @@ bool StepperCtrl::pidFeedback(int64_t desiredLoc, int64_t currentLoc, Control_t 
 		//error is in units of degrees when 360 degrees == 65536
 		error=(desiredLoc-y); //error is currentPos-desiredPos
 
+//  #ifdef FILTERCURRENT - fail
+//    //OEmod: filter if fits in 16 bit (lower ripple only matters for precise moves anyway)
+//    if (error<16384&&error>-16384)
+//    {
+//      error = (int64_t)lpass2.step(lpass1.step((int16_t)error));
+//    }
+//  #endif
+
 		Iterm+=(pPID.Ki * error);
 
 		//Over the long term we do not want error
@@ -1077,6 +1093,14 @@ bool StepperCtrl::pidFeedback(int64_t desiredLoc, int64_t currentLoc, Control_t 
 		u=((pPID.Kp * error) + Iterm - (pPID.Kd *(lastError-error)));
 
 		U=abs(u)/CTRL_PID_SCALING;
+    
+  //OEmod: apply low pass filter - fail
+  #ifdef FILTERCURRENT
+//    LOG("raw U %d",(int32_t)U);
+//    U = (int32_t)lpass2.step(lpass1.step((int16_t)U));
+//    LOG("filt U %d",(int32_t)U);
+  #endif
+    
 		if (U>motorParams.currentMa)
 		{
 			U=motorParams.currentMa;
@@ -1173,6 +1197,7 @@ bool StepperCtrl::simpleFeedback(int64_t desiredLoc, int64_t currentLoc, Control
 	//static int64_t lastY=getCurrentLocation();
 	static int32_t velocity=0;
   
+  //OEmod: define low pass filter
   int32_t c1[3] = {21263,-30670,31387};
   int32_t s1[3] = {8,1,0};
   static filter lpass1(c1,s1,0);
@@ -1259,7 +1284,11 @@ bool StepperCtrl::simpleFeedback(int64_t desiredLoc, int64_t currentLoc, Control
 																/ fullStep + motorParams.currentHoldMa;
 
 		//ma=(abs(u)*(NVM->SystemParams.currentMa))/fullStep;
+    
+  //OEmod: apply low pass filter
+  #ifdef FILTERCURRENT
     ma = (int32_t)lpass2.step(lpass1.step((int16_t)ma));//2 steps filter
+  #endif
 
 		if (ma>motorParams.currentMa)
 		{
@@ -1412,14 +1441,14 @@ bool StepperCtrl::processFeedback(void)
 	currentLoc=getCurrentLocation();
 	mean=(31*mean+currentLoc+16)/32;
 
-#ifdef A5995_DRIVER //the A5995 is has more driver noise
-	if (abs(currentLoc-mean)<ANGLE_FROM_DEGREES(0.9))
-#else
-	if (abs(currentLoc-mean)<ANGLE_FROM_DEGREES(0.3))
-#endif
-	{
-	   currentLoc=mean;
-	}
+//#ifdef A5995_DRIVER //the A5995 is has more driver noise
+//	if (abs(currentLoc-mean)<ANGLE_FROM_DEGREES(0.9))
+//#else
+//	if (abs(currentLoc-mean)<ANGLE_FROM_DEGREES(0.3))
+//#endif
+//	{
+//	   currentLoc=mean;
+//	}
 
 
 
