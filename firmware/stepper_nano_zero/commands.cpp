@@ -124,9 +124,20 @@ sCommand Cmds[] =
       COMMAND(eepromsetloc),
       COMMAND(i2c),
       COMMAND(i2cprint),
+      COMMAND(info),
 
       {"",0,""}, //End of list signal
 };
+
+static int info_cmd(sCmdUart *ptrUart,int argc, char * argv[])
+{
+  CommandPrintf(ptrUart,"NZS name: %s\n\r",NZS_LABEL);
+  CommandPrintf(ptrUart,"Firmware: %s\n\r",VERSION);
+  CommandPrintf(ptrUart,"I2C address: %s\n\r",NZS_ADDRESS);
+  CommandPrintf(ptrUart,"loop frequency: %s\n\r",NZS_CONTROL_LOOP_HZ);
+  
+  
+}
 
 static int i2cprint_cmd(sCmdUart *ptrUart,int argc, char * argv[])
 {
