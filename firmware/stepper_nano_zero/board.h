@@ -40,8 +40,8 @@
 //The March 21 2017 NEMA 17 Smart Stepper has changed some pin outs
 // A1 was changed to read motor voltage, hence SW4 is now using D4
 // comment out this next line if using the older hardware
-#define NEMA17_SMART_STEPPER_3_21_2017
-
+//#define NEMA17_SMART_STEPPER_3_21_2017
+#define NZS_LABEL "Z"
 
 #ifdef A5995_DRIVER
 #ifdef NEMA17_SMART_STEPPER_3_21_2017
@@ -55,7 +55,7 @@
 
 #define NZS_AS5047_PIPELINE //does a pipeline read of encoder, which is slightly faster
 
-#define NZS_CONTROL_LOOP_HZ (6000) //update rate of control loop
+#define NZS_CONTROL_LOOP_HZ (5000) //update rate of control loop
 
 
 #define NZS_LCD_ABSOULTE_ANGLE  //define this to show angle from zero in positive and negative direction
