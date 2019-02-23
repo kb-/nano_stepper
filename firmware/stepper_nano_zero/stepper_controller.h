@@ -54,11 +54,12 @@ typedef struct {
 
 
  typedef __attribute__((aligned(4))) struct {
-      int32_t microSecs;
+      uint32_t microSecs;
       int32_t desiredLoc;
       int32_t actualLoc;
       int32_t angle;
       int32_t ma;
+      uint32_t loopTimeus;
 } Location_t;
 
 
@@ -106,7 +107,7 @@ class StepperCtrl
 
 
 
-		volatile int32_t loopTimeus; //time to run loop in microseconds
+		volatile uint32_t loopTimeus; //time to run loop in microseconds
 
 		volatile PID_t sPID; //simple control loop PID parameters
 		volatile PID_t pPID; //positional current based PID control parameters
@@ -204,7 +205,7 @@ class StepperCtrl
 		void enable(bool enable);
 		bool getEnable(void) {return enabled;}
 
-		int32_t getLoopTime(void) { return loopTimeus;}
+		uint32_t getLoopTime(void) { return loopTimeus;}
 
 		void PID_Autotune(void);
 		void setZero(void);
