@@ -54,7 +54,8 @@
 //The March 21 2017 NEMA 17 Smart Stepper has changed some pin outs
 // A1 was changed to read motor voltage, hence SW4 is now using D4
 // comment out this next line if using the older hardware
-#define NEMA17_SMART_STEPPER_3_21_2017
+//#define NEMA17_SMART_STEPPER_3_21_2017
+#define NZS_LABEL "X"                    
 
 //The MKS Servo42 uses the A1333_Encoder
 // Please uncomment this line and make sure the NEMA17_SMART_STEPPER_3_21_2017 is

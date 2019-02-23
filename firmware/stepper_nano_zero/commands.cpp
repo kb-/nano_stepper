@@ -122,6 +122,7 @@ CMD_STR(errorpin, "Sets the logic level of error pin")
 CMD_STR(geterror, "gets current error")
 CMD_STR(getsteps, "returns number of steps seen")
 CMD_STR(debug, "enables debug commands out USB")
+CMD_STR(info, "print NZS info");//mod OE                                        
 //List of supported commands
 sCommand Cmds[] =
 {
@@ -180,8 +181,16 @@ sCommand Cmds[] =
 		COMMAND(geterror),
 		COMMAND(getsteps),
 		COMMAND(debug),
+    COMMAND(info),                  
 		{"",0,""}, //End of list signal
 };
+
+static int info_cmd(sCmdUart *ptrUart,int argc, char * argv[])
+{
+  CommandPrintf(ptrUart,"NZS name: %s\n\r",NZS_LABEL);
+  CommandPrintf(ptrUart,"Firmware: %s\n\r",VERSION);
+  CommandPrintf(ptrUart,"loop frequency: %" PRIi32 "\n\r",NZS_CONTROL_LOOP_HZ);
+}
 
 static int debug_cmd(sCmdUart *ptrUart,int argc, char * argv[])
 {
