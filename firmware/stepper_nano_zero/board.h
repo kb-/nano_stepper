@@ -45,6 +45,7 @@
 //uncomment this if you are using the Mechaduino hardware
 //#define MECHADUINO_HARDWARE
 
+#define DISABLE_LCD
 
 //uncomment the follow lines if using the NEMA 23 10A hardware
 //#define NEMA_23_10A_HW
@@ -55,7 +56,8 @@
 //The March 21 2017 NEMA 17 Smart Stepper has changed some pin outs
 // A1 was changed to read motor voltage, hence SW4 is now using D4
 // comment out this next line if using the older hardware
-#define NEMA17_SMART_STEPPER_3_21_2017
+//#define NEMA17_SMART_STEPPER_3_21_2017
+#define NZS_LABEL "X"
 
 #if defined(MECHADUINO_HARDWARE) && defined(NEMA17_SMART_STEPPER_3_21_2017)
 #error "Cannot have both MECHADUINO_HARDWARE and NEMA17_SMART_STEPPER_3_21_2017 defined in board.h"
@@ -78,7 +80,7 @@
 
 #define NZS_AS5047_PIPELINE //does a pipeline read of encoder, which is slightly faster
 
-#define NZS_CONTROL_LOOP_HZ (6000) //update rate of control loop
+#define NZS_CONTROL_LOOP_HZ (5000) //update rate of control loop
 
 
 #define NZS_LCD_ABSOULTE_ANGLE  //define this to show angle from zero in positive and negative direction
@@ -241,7 +243,6 @@ typedef enum {
 //TC3 is used for planner tick
 //TC4 is used for step count
 //TC5 is use for timing the control loop
-
 
 //mechaduio and Arduino Zero has defined serial ports differently than NZS
 #ifdef MECHADUINO_HARDWARE
